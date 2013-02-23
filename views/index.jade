@@ -2,4 +2,23 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  div#info
+  div#container
+
+block scripts
+  script(type='text/javascript', src='/javascripts/three/build/three.min.js')
+  script(type='text/javascript', src='/javascripts/three/loaders/BinaryLoader.js')
+  script(type='text/javascript', src='/javascripts/three/renderers/WebGLDeferredRenderer.js')
+  script(type='text/javascript', src='/javascripts/three/ShaderDeferred.js')
+  script(type='text/javascript', src='/javascripts/three/shaders/CopyShader.js')
+  script(type='text/javascript', src='/javascripts/three/shaders/FXAAShader.js')
+  script(type='text/javascript', src='/javascripts/three/shaders/ConvolutionShader.js')
+  script(type='text/javascript', src='/javascripts/three/postprocessing/EffectComposer.js')
+  script(type='text/javascript', src='/javascripts/three/postprocessing/RenderPass.js')
+  script(type='text/javascript', src='/javascripts/three/postprocessing/ShaderPass.js')
+  script(type='text/javascript', src='/javascripts/three/postprocessing/MaskPass.js')
+  script(type='text/javascript', src='/javascripts/three/postprocessing/BloomPass.js')
+  script(type='text/javascript', src='/javascripts/three/Detector.js')
+  script(type='text/javascript', src='/javascripts/three/libs/stats.min.js')
+  
+  script(type='text/javascript', src='/javascripts/frontend_app.js')

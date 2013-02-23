@@ -5,5 +5,5 @@
 
 exports.index = function(req, res){
   console.log('get index');
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'Mario' });
 };
