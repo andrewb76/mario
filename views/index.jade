@@ -1,11 +1,59 @@
 extends layout
 
+block navbar
+  div.navbar-inner
+    div.container-fluid
+      button.btn.btn-navbar(type='button, data-toggle='collapse', data-target='.nav-collapse')
+        span.icn-bar
+        span.icn-bar
+        span.icn-bar
+      a.brand(href='#') Mario
+      div#info
+      div.nav-collapse.collapse
+        p.navbar-text.pull-right Logged in as:&nbsp;
+          a.navbar-link(href='#i!/') Andrew
+        ul.nav
+          li#m_item_start.active
+            a(href='#!/') Start
+          li#m_item_success
+            a(href='#!/success') Success
+          li#m_item_error
+            a(href='#!/error') Error
 block content
-  h1= title
-  div#info
-  div#container
+  div.span3
+    div.well.sidebar-nav
+      ul.nav.nav-list
+        li.nav-header Sidebar
+        li.active
+          a(href='#') Link
+        li
+          a(href='#') Link
+    
+    div.well.routing-block#start
+      ul.nav.nav-list
+        li.nav-header Start
+        li
+          a(href='#!/success') test
+
+    div.well.routing-block#success
+      ul.nav.nav-list
+        li.nav-header Seccess
+
+    div.well.routing-block#error
+      ul.nav.nav-list
+        li.nav-header Error
+
+
+  div.span9
+    div.hero-unit
+      div#container
 
 block scripts
+  script(type='text/javascript', src='/javascripts/jquery/jquery-1.9.1.min.js')
+  
+  script(type='text/javascript', src='/javascripts/backbone/underscore-min.js')
+  script(type='text/javascript', src='/javascripts/backbone/backbone-min.js')
+  
   script(type='text/javascript', src='/javascripts/three/build/three.min.js')
   script(type='text/javascript', src='/javascripts/three/loaders/BinaryLoader.js')
   script(type='text/javascript', src='/javascripts/three/renderers/WebGLDeferredRenderer.js')

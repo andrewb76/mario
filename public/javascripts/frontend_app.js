@@ -1,4 +1,77 @@
+var AppState = Backbone.Model.extend({
+    defaults: {
+        username: "",
+        state: "start"
+    }
+});
+
+var appState = new AppState();
+//============================================================
+var UnitModel = Backbone.Model.extend({
+  defaults: {
+    "Name":  "",
+    "Color": 0x822222
+  }
+});
+var UnitCollection = Backbone.Collection.extend({
+  model: UnitModel,
+});
+var units = new UnitCollection([ // Моя семья
+  { Name: "Муфта" },
+  { Name: "Уголок", Color: 0x660000 },
+  { Name: "Тройник", Color: 0x006600 }
+]);
+//============================================================
+
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+//============================================================
+var Controller = Backbone.Router.extend({
+    routes: {
+        "": "start", // Пустой hash-тэг
+        "!/": "start", // Начальная страница
+        "!/success": "success", // Блок удачи
+        "!/error": "error" // Блок ошибки
+    },
+
+    start: function () {
+        $(".routing-block").hide(); // Прячем все блоки
+        $("#start").show(); // Показываем нужный
+        $("ul.nav li").removeClass('active');
+        $("#m_item_start").addClass('active');
+    },
+
+    success: function () {
+        $(".routing-block").hide();
+        $("#success").show();
+        $("ul.nav li").removeClass('active');
+        $("#m_item_success").addClass('active');
+    },
+
+    error: function () {
+        $(".routing-block").hide();
+        $("#error").show();
+        $("ul.nav li").removeClass('active');
+        $("#m_item_error").addClass('active');
+    }
+});
+
+//==================================================================
+var controller = new Controller(); // Создаём контроллер
+Backbone.history.start();  // Запускаем HTML5 History push   
+//==================================================================
+var StartView = Backbone.View.extend({
+    el: $("#start"), // DOM элемент widget'а
+    events: {
+        "click a": "test_event" // Обработчик клика на кнопке "Проверить"
+    },
+    test_event: function () {
+      alert('WoW');
+      controller.navigate("success", true); // переход на страницу success
+    }
+});
+
+var start = new StartView();
+//==================================================================
 
 			var SCALE = 1;
 			var MARGIN = 100;
@@ -30,6 +103,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			var areaLight1, areaLight2, areaLight3;
 
 			//
+                        var holder_obj;
 
 			init();
 			animate();
@@ -42,9 +116,11 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 				renderer = new THREE.WebGLDeferredRenderer( { width: WIDTH, height: HEIGHT, scale: SCALE, antialias: true, tonemapping: THREE.FilmicOperator, brightness: 2.5 } );
 
-				renderer.domElement.style.position = "absolute";
-				renderer.domElement.style.top = MARGIN + "px";
-				renderer.domElement.style.left = "0px";
+				renderer.domElement.style.width = "100%";
+				renderer.domElement.style.height = "350px";
+				//renderer.domElement.style.position = "absolute";
+				//renderer.domElement.style.top = MARGIN + "px";
+				//renderer.domElement.style.left = "0px";
 
 				var container = document.getElementById( 'container' );
 				container.appendChild( renderer.domElement );
@@ -64,11 +140,13 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				scene = new THREE.Scene();
 				scene.add( camera );
 
+                                holder_obj = new THREE.Mesh( new THREE.SphereGeometry( 100, 16, 8 ), new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true } ) );
+
 				// stats
 
 				stats = new Stats();
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.top = '8px';
+				//stats.domElement.style.position = 'absolute';
+				//stats.domElement.style.top = '8px';
 				stats.domElement.style.zIndex = 100;
 				container.appendChild( stats.domElement );
 
@@ -83,6 +161,8 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				// add objects
 
 				initObjects();
+				
+                                initUnit();
 
 				// events
 
@@ -180,6 +260,7 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 					var object = new THREE.Mesh( geometry, material );
 					object.scale.multiplyScalar( 2 );
 					scene.add( object );
+                                        object.add( holder_obj );
 
 				} );
 
@@ -268,10 +349,10 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				WIDTH = window.innerWidth;
 				HEIGHT = window.innerHeight - 2 * MARGIN;
 
-				renderer.setSize( WIDTH, HEIGHT );
+				//renderer.setSize( WIDTH, HEIGHT );
 
-				camera.aspect = WIDTH / HEIGHT;
-				camera.updateProjectionMatrix();
+				//camera.aspect = WIDTH / HEIGHT;
+				//camera.updateProjectionMatrix();
 
 			}
 
@@ -292,6 +373,9 @@ if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 				stats.update();
 
 			}
+
+                        function initUnit() {
+                        }
 
 			function render() {
 
