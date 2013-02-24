@@ -24,16 +24,28 @@ block content
     div.well.sidebar-nav
       ul.nav.nav-list
         li.nav-header Sidebar
-        li.active
-          a(href='#') Link
-        li
-          a(href='#') Link
     
     div.well.routing-block#start
       ul.nav.nav-list
         li.nav-header Start
         li
-          a(href='#!/success') test
+          a(href='#') refresh
+      ul#unit-list
+
+    div.well
+      ul.nav.nav-list
+        li.nav-header Unit
+        li#unit-detail
+
+    script#udetail-empty(type='text/template')
+      <p>not selected</p>
+
+    script#udetail-show(type='text/template')
+      <a class="btn btn-mini" href="#"><i class="icon-edit"></i> Edit</a>
+      <p>view: <%= Name %></p>
+
+    script#udetail-edit(type='text/template')
+      <p>edit: <%= Name %></p>
 
     div.well.routing-block#success
       ul.nav.nav-list
@@ -45,7 +57,7 @@ block content
 
 
   div.span9
-    div.hero-unit
+    div.well
       div#container
 
 block scripts
@@ -55,18 +67,8 @@ block scripts
   script(type='text/javascript', src='/javascripts/backbone/backbone-min.js')
   
   script(type='text/javascript', src='/javascripts/three/build/three.min.js')
-  script(type='text/javascript', src='/javascripts/three/loaders/BinaryLoader.js')
-  script(type='text/javascript', src='/javascripts/three/renderers/WebGLDeferredRenderer.js')
-  script(type='text/javascript', src='/javascripts/three/ShaderDeferred.js')
-  script(type='text/javascript', src='/javascripts/three/shaders/CopyShader.js')
-  script(type='text/javascript', src='/javascripts/three/shaders/FXAAShader.js')
-  script(type='text/javascript', src='/javascripts/three/shaders/ConvolutionShader.js')
-  script(type='text/javascript', src='/javascripts/three/postprocessing/EffectComposer.js')
-  script(type='text/javascript', src='/javascripts/three/postprocessing/RenderPass.js')
-  script(type='text/javascript', src='/javascripts/three/postprocessing/ShaderPass.js')
-  script(type='text/javascript', src='/javascripts/three/postprocessing/MaskPass.js')
-  script(type='text/javascript', src='/javascripts/three/postprocessing/BloomPass.js')
   script(type='text/javascript', src='/javascripts/three/Detector.js')
+  script(type='text/javascript', src='/javascripts/three/libs/OrbitControls.js')
   script(type='text/javascript', src='/javascripts/three/libs/stats.min.js')
   
   script(type='text/javascript', src='/javascripts/frontend_app.js')

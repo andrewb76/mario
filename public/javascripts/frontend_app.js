@@ -1,411 +1,246 @@
+var holder_obj;
 var AppState = Backbone.Model.extend({
-    defaults: {
-        username: "",
-        state: "start"
-    }
+  defaults: {
+  state: "empty",
+  active_unit: null,
+  connections: [],
+}
 });
 
 var appState = new AppState();
 //============================================================
 var UnitModel = Backbone.Model.extend({
-  defaults: {
-    "Name":  "",
-    "Color": 0x822222
-  }
+defaults: {
+"Name":  "",
+"Color": 0x822222,
+"connections": [],
+}
 });
 var UnitCollection = Backbone.Collection.extend({
-  model: UnitModel,
+model: UnitModel,
 });
-var units = new UnitCollection([ // Моя семья
-  { Name: "Муфта" },
-  { Name: "Уголок", Color: 0x660000 },
-  { Name: "Тройник", Color: 0x006600 }
+var units = new UnitCollection([ // 
+  { Name:        "Муфта", 
+    connections: [
+      {ctype: 'thread_3/4_M', position: {X: 0, Y: 0, Z: 6}, rotation: {X: 0, Y: 0, Z: 0}},
+      {ctype: 'thread_3/4_F', position: {X: 0, Y: 0, Z: -6}, rotation: {X: 0, Y: 0, Z: 0}},
+    ]
+  },
+  { Name: "Уголок", 
+    Color: 0x660000, 
+    connections: [
+      {ctype: 'thread_3/4_M', position: {X: 0, Y: 6, Z: 0}, rotation: {X: 90, Y: 0, Z: 0}},
+      {ctype: 'thread_3/4_F', position: {X: 0, Y: 0, Z: -6}, rotation: {X: 0, Y: 0, Z: 0}},
+    ]
+  },
+  { Name: "Тройник", 
+    Color: 0x006600, 
+    connections: [
+      {ctype: 'thread_3/4_M', position: {X: 0, Y: 0, Z: 6}, rotation: {X: 0, Y: 0, Z: 0}},
+      {ctype: 'thread_3/4_M', position: {X: 0, Y: 6, Z: 0}, rotation: {X: 90, Y: 0, Z: 0}},
+      {ctype: 'thread_3/4_F', position: {X: 0, Y: 0, Z: -6}, rotation: {X: 0, Y: 0, Z: 0}},
+    ]
+  },
 ]);
 //============================================================
 
 if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 //============================================================
 var Controller = Backbone.Router.extend({
-    routes: {
-        "": "start", // Пустой hash-тэг
-        "!/": "start", // Начальная страница
-        "!/success": "success", // Блок удачи
-        "!/error": "error" // Блок ошибки
-    },
+routes: {
+"": "start", // Пустой hash-тэг
+"!/": "start", // Начальная страница
+"!/success": "success", // Блок удачи
+"!/error": "error" // Блок ошибки
+},
 
-    start: function () {
-        $(".routing-block").hide(); // Прячем все блоки
-        $("#start").show(); // Показываем нужный
-        $("ul.nav li").removeClass('active');
-        $("#m_item_start").addClass('active');
-    },
+start: function () {
+$(".routing-block").hide(); // Прячем все блоки
+$("#start").show(); // Показываем нужный
+$("ul.nav li").removeClass('active');
+$("#m_item_start").addClass('active');
+},
 
-    success: function () {
-        $(".routing-block").hide();
-        $("#success").show();
-        $("ul.nav li").removeClass('active');
-        $("#m_item_success").addClass('active');
-    },
+success: function () {
+$(".routing-block").hide();
+$("#success").show();
+$("ul.nav li").removeClass('active');
+$("#m_item_success").addClass('active');
+},
 
-    error: function () {
-        $(".routing-block").hide();
-        $("#error").show();
-        $("ul.nav li").removeClass('active');
-        $("#m_item_error").addClass('active');
-    }
+error: function () {
+	       $(".routing-block").hide();
+	       $("#error").show();
+	       $("ul.nav li").removeClass('active');
+	       $("#m_item_error").addClass('active');
+       }
 });
 
 //==================================================================
 var controller = new Controller(); // Создаём контроллер
 Backbone.history.start();  // Запускаем HTML5 History push   
 //==================================================================
-var StartView = Backbone.View.extend({
-    el: $("#start"), // DOM элемент widget'а
-    events: {
-        "click a": "test_event" // Обработчик клика на кнопке "Проверить"
-    },
-    test_event: function () {
-      alert('WoW');
-      controller.navigate("success", true); // переход на страницу success
-    }
+
+
+
+
+var UnitDetailView = Backbone.View.extend({
+  el: $("#unit-detail"), // DOM элемент widget'а
+  model: appState,
+  initialize: function () { // Подписка на событие модели
+    this.model.bind('change', this.render, this);
+  },
+  templates: {
+    "empty": _.template($('#udetail-empty').html()),
+    "show":  _.template($('#udetail-show').html()),
+    "edit":  _.template($('#udetail-edit').html()),
+  },
+  events: {
+    //"click a": "test_event", // Обработчик клика на кнопке "Проверить"
+    "click .edit_active_btn": "active_unit_to_edit_mode"
+  },
+  active_unit_to_edit_mode: function () {
+    alert('EDIT');
+  },
+  test_event: function () {
+    alert('test_event');
+    this.render();
+  },
+  render: function () {
+    var unit_state = this.model.get("state");
+    $(this.el).html(this.templates[unit_state](this.model.get('active_unit').toJSON()));
+  }
 });
-
-var start = new StartView();
+//=================================================================
+var unit_detail = new UnitDetailView();
 //==================================================================
-
-			var SCALE = 1;
-			var MARGIN = 100;
-
-			var WIDTH = window.innerWidth;
-			var HEIGHT = window.innerHeight - 2 * MARGIN;
-
-			var NEAR = 1.0, FAR = 350.0;
-			var VIEW_ANGLE = 40;
-
-			// controls
-
-			var mouseX = 0;
-			var mouseY = 0;
-
-			var targetX = 0, targetY = 0;
-			var angle = 0;
-			var target = new THREE.Vector3( 0, 0, 0 );
-
-			var windowHalfX = window.innerWidth / 2;
-			var windowHalfY = window.innerHeight / 2;
-
-			// core
-
-			var renderer, camera, scene, stats, clock;
-
-			// lights
-
-			var areaLight1, areaLight2, areaLight3;
-
-			//
-                        var holder_obj;
-
-			init();
-			animate();
-
-			// -----------------------------
-
-			function init() {
-
-				// renderer
-
-				renderer = new THREE.WebGLDeferredRenderer( { width: WIDTH, height: HEIGHT, scale: SCALE, antialias: true, tonemapping: THREE.FilmicOperator, brightness: 2.5 } );
-
-				renderer.domElement.style.width = "100%";
-				renderer.domElement.style.height = "350px";
-				//renderer.domElement.style.position = "absolute";
-				//renderer.domElement.style.top = MARGIN + "px";
-				//renderer.domElement.style.left = "0px";
-
-				var container = document.getElementById( 'container' );
-				container.appendChild( renderer.domElement );
-
-				// effects
-
-				var bloomEffect = new THREE.BloomPass( 0.65 );
-				renderer.addEffect( bloomEffect );
-
-				// camera
-
-				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, WIDTH / HEIGHT, NEAR, FAR );
-				camera.position.y = 40;
-
-				// scene
-
-				scene = new THREE.Scene();
-				scene.add( camera );
-
-                                holder_obj = new THREE.Mesh( new THREE.SphereGeometry( 100, 16, 8 ), new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true } ) );
-
-				// stats
-
-				stats = new Stats();
-				//stats.domElement.style.position = 'absolute';
-				//stats.domElement.style.top = '8px';
-				stats.domElement.style.zIndex = 100;
-				container.appendChild( stats.domElement );
-
-				// clock
-
-				clock = new THREE.Clock();
-
-				// add lights
-
-				initLights();
-
-				// add objects
-
-				initObjects();
-				
-                                initUnit();
-
-				// events
-
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				window.addEventListener( 'resize', onWindowResize, false );
-
-			}
-
-			// -----------------------------
-
-			function createAreaEmitter( light ) {
-
-				var geometry = new THREE.CubeGeometry( 1, 1, 1 );
-				var material = new THREE.MeshBasicMaterial( { color: light.color.getHex(), vertexColors: THREE.FaceColors } );
-
-				var backColor = 0x222222;
-
-				geometry.faces[ 5 ].color.setHex( backColor );
-				geometry.faces[ 4 ].color.setHex( backColor );
-				geometry.faces[ 2 ].color.setHex( backColor );
-				geometry.faces[ 1 ].color.setHex( backColor );
-				geometry.faces[ 0 ].color.setHex( backColor );
-
-				var emitter = new THREE.Mesh( geometry, material );
-
-				emitter.position = light.position;
-				emitter.rotation = light.rotation;
-				emitter.scale.set( light.width * 2, 0.2, light.height * 2 );
-
-				return emitter;
-
-			}
-
-			function setupAreaLight( light ) {
-
-				var matrix = light.matrixWorld;
-
-				light.right.set( 1, 0, 0 );
-				light.normal.set( 0, -1, 0 );
-
-				light.right.applyMatrix4( matrix );
-				light.normal.applyMatrix4( matrix );
-
-			}
-
-			function initLights() {
-
-				areaLight1 = new THREE.AreaLight( 0xffffff, 1 );
-				areaLight1.position.set( 0.0001, 10.0001, -18.5001 );
-				areaLight1.rotation.set( -0.74719, 0.0001, 0.0001 );
-				areaLight1.width = 10;
-				areaLight1.height = 1;
-
-				scene.add( areaLight1 );
-
-				var meshEmitter = createAreaEmitter( areaLight1 );
-				scene.add( meshEmitter );
-
-				//
-
-				areaLight2 = new THREE.AreaLight( 0x33ff66, 1.5 );
-				areaLight2.position.set( -19.0001, 3.0001, 0.0001 );
-				areaLight2.rotation.set( -1.5707, 0.0001, 1.5707 );
-				areaLight2.width = 8;
-				areaLight2.height = 1;
-
-				scene.add( areaLight2 );
-
-				var meshEmitter = createAreaEmitter( areaLight2 );
-				scene.add( meshEmitter );
-
-				//
-
-				areaLight3 = new THREE.AreaLight( 0x3366ff, 1.5 );
-				areaLight3.position.set( 19.0001, 3.0001, 0.0001 );
-				areaLight3.rotation.set( 1.5707, 0.0001, -1.5707 );
-				areaLight3.width = 8;
-				areaLight3.height = 1;
-
-				scene.add( areaLight3 );
-
-				var meshEmitter = createAreaEmitter( areaLight3 );
-				scene.add( meshEmitter );
-
-			}
-
-			// -----------------------------
-
-			function initObjects() {
-
-				var loader = new THREE.BinaryLoader();
-				loader.load( "/javascripts/box.js", function ( geometry, materials ) {
-
-					var material = new THREE.MeshPhongMaterial( { color: 0xffaa55, specular: 0x888888, shininess: 200 } );
-					var object = new THREE.Mesh( geometry, material );
-					object.scale.multiplyScalar( 2 );
-					scene.add( object );
-                                        object.add( holder_obj );
-
-				} );
-
-				/*
-				var loader = new THREE.BinaryLoader();
-				loader.load( "obj/veyron/VeyronNoUv_bin.js", function ( geometry ) {
-
-					var r = "textures/cube/Bridge2/";
-					var urls = [
-						r + "posx.jpg", r + "negx.jpg",
-						r + "posy.jpg", r + "negy.jpg",
-						r + "posz.jpg", r + "negz.jpg"
-					];
-
-					var textureCube = THREE.ImageUtils.loadTextureCube( urls );
-					textureCube.format = THREE.RGBFormat;
-
-					var materials = [
-						// tires + inside
-						new THREE.MeshLambertMaterial( {
-							color: 0x050505
-						} ),
-						// wheels + extras chrome
-						new THREE.MeshLambertMaterial( {
-							color: 0xffffff,
-							envMap: textureCube
-						} ),
-						// back / top / front torso
-						new THREE.MeshLambertMaterial( {
-							color: 0x000000,
-							ambient: 0x000000,
-							envMap: textureCube,
-							combine: THREE.MixOperation,
-							reflectivity: 0.15
-						} ),
-						// glass
-						new THREE.MeshLambertMaterial( {
-							color: 0x101046,
-							envMap: textureCube,
-							opacity: 0.25,
-							transparent: true
-						} ),
-						// sides torso
-						new THREE.MeshLambertMaterial( {
-							color: 0xffffff,
-							envMap: textureCube
-						} ),
-						// engine
-						new THREE.MeshLambertMaterial( {
-							color: 0xffffff,
-							envMap: textureCube
-						} ),
-						// backlights
-						new THREE.MeshLambertMaterial( {
-							color: 0xff0000,
-							opacity: 0.5,
-							transparent: true
-						} ),
-						// backsignals
-						new THREE.MeshLambertMaterial( {
-							color: 0xffbb00,
-							opacity: 0.5,
-							transparent: true
-						} )
-					];
-
-					var object = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial( materials ) );
-					object.position.y = 5;
-					object.rotation.y = Math.PI / 4;
-					object.scale.multiplyScalar( 0.1 );
-					scene.add( object );
-
-				} );
-				*/
-
-			}
-
-
-			// -----------------------------
-
-			function onWindowResize( event ) {
-
-				windowHalfX = window.innerWidth / 2;
-				windowHalfY = window.innerHeight / 2;
-
-				WIDTH = window.innerWidth;
-				HEIGHT = window.innerHeight - 2 * MARGIN;
-
-				//renderer.setSize( WIDTH, HEIGHT );
-
-				//camera.aspect = WIDTH / HEIGHT;
-				//camera.updateProjectionMatrix();
-
-			}
-
-			function onDocumentMouseMove( event ) {
-
-				mouseX = ( event.clientX - windowHalfX ) * 1;
-				mouseY = ( event.clientY - windowHalfY ) * 1;
-
-			}
-
-			// -----------------------------
-
-			function animate() {
-
-				requestAnimationFrame( animate );
-
-				render();
-				stats.update();
-
-			}
-
-                        function initUnit() {
-                        }
-
-			function render() {
-
-				// update camera
-
-				var delta = clock.getDelta();
-
-				targetX = mouseX * .001;
-				targetY = mouseY * .001;
-
-				angle += 0.05 * ( targetX - angle );
-
-				camera.position.x = -Math.sin( angle ) * 40;
-				camera.position.z =  Math.cos( angle ) * 40;
-
-				camera.lookAt( target );
-
-				var time = Date.now();
-
-				areaLight1.position.x = Math.sin( Date.now() * 0.001 ) * 9;
-				areaLight1.position.y = Math.sin( Date.now() * 0.0013 ) * 5 + 5;
-
-				areaLight2.position.y = Math.sin( Date.now() * 0.0011 ) * 3 + 5;
-				areaLight2.position.z = Math.sin( Date.now() * 0.00113 ) * 10;
-
-				areaLight3.position.y = Math.sin( Date.now() * 0.00111 ) * 3 + 5;
-				areaLight3.position.z = Math.sin( Date.now() * 0.001113 ) * 10;
-
-				// render
-
-				renderer.render( scene, camera );
-
-			}
+var StartView = Backbone.View.extend({
+el: $("#start"), // DOM элемент widget'а
+events: {
+"click a": "test_event" // Обработчик клика на кнопке "Проверить"
+},
+test_event: function () {
+//alert('WoW');
+//controller.navigate("success", true); // переход на страницу success
+this.render();
+},
+render: function () {
+list_ul = $(this.el).find('ul#unit-list');
+list_ul.empty();
+units.each(function(mel){
+	list_ul.append('<li><a href="#" onclick="set_active('+"'"+mel.cid+"'"+')">'+mel.get("Name")+'</a></li>')
+	})
+}
+});
+//=================================================================
+var start = new StartView();
+var container, stats;
+var camera, controls, scene, renderer;
+var cross;
+
+init();
+animate();
+
+function init() {
+
+	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.z = 50;
+
+	controls = new THREE.OrbitControls( camera );
+	controls.addEventListener( 'change', render );
+
+	scene = new THREE.Scene();
+	scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
+
+	// world
+
+	var geometry = new THREE.CylinderGeometry( 0, 10, 30, 4, 1 );
+	var material =  new THREE.MeshLambertMaterial( { color:0xffffff, shading: THREE.FlatShading } );
+
+	holder_obj = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 16, 8 ), material );
+	scene.add( holder_obj );
+        scene.add( new THREE.AxisHelper( 10 ) );
+	// lights
+
+	light = new THREE.DirectionalLight( 0xffffff );
+	light.position.set( 1, 1, 1 );
+	scene.add( light );
+
+	light = new THREE.DirectionalLight( 0x002288 );
+	light.position.set( -1, -1, -1 );
+	scene.add( light );
+
+	light = new THREE.AmbientLight( 0x222222 );
+	scene.add( light );
+
+
+	// renderer
+
+	renderer = new THREE.WebGLRenderer( { antialias: false } );
+	renderer.setClearColor( scene.fog.color, 1 );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+
+	container = document.getElementById( 'container' );
+	container.appendChild( renderer.domElement );
+
+	stats = new Stats();
+	stats.domElement.style.zIndex = 100;
+	//container.appendChild( stats.domElement );
+        $('ul.nav.nav-list li.nav-header:first').append( stats.domElement );
+
+	//
+
+	window.addEventListener( 'resize', onWindowResize, false );
+
+}
+
+function onWindowResize() {
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+        renderer.domElement.style.width = "100%";
+        renderer.domElement.style.height = "310px";
+	//renderer.setSize( window.innerWidth, window.innerHeight );
+
+	render();
+
+}
+
+function animate() {
+
+	requestAnimationFrame( animate );
+	controls.update();
+
+}
+
+function render() {
+
+	renderer.render( scene, camera );
+	stats.update();
+}
+
+function set_active(cid){
+        //alert('W'+cid);
+	if( holder_obj.children ){
+		while( holder_obj.children.length!=0  ) {
+			var len = holder_obj.children.length;
+			holder_obj.remove( holder_obj.children[len -1 ] );
+			scene.remove( holder_obj.children[len -1 ] );
+		}
+	}
+	var unit = units.get(cid);
+        var material = new THREE.MeshBasicMaterial( { color: unit.get('Color') } );
+        appState.set( {state: "show", active_unit: unit} );
+	var no = new THREE.Object3D();
+	var con_geom = new THREE.PlaneGeometry( 2, 2 );
+	_.each(unit.get('connections'), function(con){ 
+	  var con_object = new THREE.Mesh( con_geom, material );
+          con_object.material.side = THREE.DoubleSide;
+          no.add( con_object );
+          con_object.position.set(con.position.X, con.position.Y, con.position.Z); 
+          con_object.rotation.set(con.rotation.X * Math.PI / 180, con.rotation.Y * Math.PI / 180, con.rotation.Z * Math.PI / 180); 
+	}); 
+	holder_obj.add( no ); 
+        render();
+}
+//==================================================================
