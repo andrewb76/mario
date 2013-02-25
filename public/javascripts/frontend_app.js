@@ -1,14 +1,86 @@
-var holder_obj;
-var AppState = Backbone.Model.extend({
+MarioApp = new Backbone.Marionette.Application();
+//========================================================================
+var ConnectionModel = Backbone.Model.extend({});
+var ConnectionCollection = Backbone.Collection.extend({
+  model: ConnectionModel,
+});
+var ConnectionView = Backbone.Marionette.ItemView.extend({
+  template: '#connItemView'
+});
+var ConnectionEmptyView = Backbone.Marionette.ItemView.extend({
+  template: '#connEmptyView'
+}); 
+var ConnectionListView = Backbone.Marionette.CollectionView.extend({
+  itemView: ConnectionView,
+  emptyView: ConnectionEmptyView
+});
+//========================================================================
+var UnitModel = Backbone.Model.extend({
   defaults: {
-  state: "empty",
-  active_unit: null,
-  connections: [],
+    "name":  "",
+    "color": 0x822222,
+    "connections": new ConnectionCollection(),
 }
 });
+var UnitCollection = Backbone.Collection.extend({
+  model: UnitModel,
+});
+//========================================================================
+MarioApp.addRegions({
+  connListRegion: "#connList",
+  unitListRegion: "#unitList"
+});
+MarioApp.addInitializer(function(){
 
-var appState = new AppState();
+  if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+  var con1 = new ConnectionModel({name: 'thread_3/4_M'});
+  var con2 = new ConnectionModel({name: 'thread_3/4_F'});
+  MarioApp.connections = new ConnectionCollection([con1, con2]);
+  MarioApp.units = new UnitCollection([ 
+    { Name:        "Муфта", 
+      connections: [
+        {ctype: con1, position: {X: 0, Y: 0, Z: 6}, rotation: {X: 0, Y: 0, Z: 0}},
+        {ctype: con2, position: {X: 0, Y: 0, Z: -6}, rotation: {X: 0, Y: 0, Z: 0}},
+      ]
+    },
+    { Name: "Уголок", 
+      Color: 0x660000, 
+      connections: [
+        {ctype: con1, position: {X: 0, Y: 6, Z: 0}, rotation: {X: 90, Y: 0, Z: 0}},
+        {ctype: con2, position: {X: 0, Y: 0, Z: -6}, rotation: {X: 0, Y: 0, Z: 0}},
+      ]
+    },
+    { Name: "Тройник", 
+      Color: 0x006600, 
+      connections: [
+        {ctype: con1, position: {X: 0, Y: 0, Z: 6}, rotation: {X: 0, Y: 0, Z: 0}},
+        {ctype: con1, position: {X: 0, Y: 6, Z: 0}, rotation: {X: 90, Y: 0, Z: 0}},
+        {ctype: con2, position: {X: 0, Y: 0, Z: -6}, rotation: {X: 0, Y: 0, Z: 0}},
+      ]
+    },
+  ]);
+  MarioApp.connListRegion.show(new ConnectionListView({collection: MarioApp.connections}));
+});
+
+
+  MarioApp.start();
+/*
+MarioApp.on('initialize:after', function(options) {
+	console.log('Initialization Finished');
+});
+MarioApp.on('start', function(options) {
+	Backbone.history.start(); // Great time to do this
+});
+
+var SomeModule = function(o){
+	// Constructor for SomeModule
+};
+
+*/
+
 //============================================================
+/*
 var UnitModel = Backbone.Model.extend({
 defaults: {
 "Name":  "",
@@ -44,7 +116,6 @@ var units = new UnitCollection([ //
 ]);
 //============================================================
 
-if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 //============================================================
 var Controller = Backbone.Router.extend({
 routes: {
@@ -96,11 +167,14 @@ var UnitDetailView = Backbone.View.extend({
     "edit":  _.template($('#udetail-edit').html()),
   },
   events: {
-    //"click a": "test_event", // Обработчик клика на кнопке "Проверить"
-    "click .edit_active_btn": "active_unit_to_edit_mode"
+    "click #edit_unit": "active_unit_to_edit_mode",
+    "click #view_unit": "active_unit_to_show_mode",
   },
   active_unit_to_edit_mode: function () {
-    alert('EDIT');
+    this.model.set("state", "edit");
+  },
+  active_unit_to_show_mode: function () {
+    this.model.set("state", "show");
   },
   test_event: function () {
     alert('test_event');
@@ -244,3 +318,6 @@ function set_active(cid){
         render();
 }
 //==================================================================
+onWindowResize();
+
+*/

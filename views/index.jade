@@ -34,18 +34,37 @@ block content
 
     div.well
       ul.nav.nav-list
+        li.nav-header Connections
+        li#unit-detail
+        #connList
+
+    div.well
+      ul.nav.nav-list
         li.nav-header Unit
         li#unit-detail
+        #unitConnectionsList
 
     script#udetail-empty(type='text/template')
       <p>not selected</p>
 
     script#udetail-show(type='text/template')
-      <a class="btn btn-mini" href="#"><i class="icon-edit"></i> Edit</a>
+      <a id="edit_unit" class="btn btn-mini" href="#"><i class="icon-edit"></i> Edit</a>
       <p>view: <%= Name %></p>
 
     script#udetail-edit(type='text/template')
-      <p>edit: <%= Name %></p>
+      <form>
+      <fieldset>
+      <legend>Unit properties</legend>
+      <label>Unit name</label>
+      <input type="text" value="<%= Name %>"/>
+      <span class="help-block">Unic unit code name.</span>
+      <label class="checkbox">
+      <input type="checkbox"> Check me out
+      </label>
+      <button type="submit" class="btn">Submit</button>
+      <a id="view_unit" class="btn btn-mini" href="#"><i class="icon-search"></i> View</a>
+      </fieldset>
+      </form>
 
     div.well.routing-block#success
       ul.nav.nav-list
@@ -61,10 +80,19 @@ block content
       div#container
 
 block scripts
+
+  script#connListView(type='text/template')
+    <p>connection list:</p>
+  script#connEmptyView(type='text/template')
+    <p>list empty</p>
+  script#connItemView(type='text/template')
+    <p><%= name %></p>
+
   script(type='text/javascript', src='/javascripts/jquery/jquery-1.9.1.min.js')
   
   script(type='text/javascript', src='/javascripts/backbone/underscore-min.js')
   script(type='text/javascript', src='/javascripts/backbone/backbone-min.js')
+  script(type='text/javascript', src='/javascripts/backbone/backbone.marionette.min.js')
   
   script(type='text/javascript', src='/javascripts/three/build/three.min.js')
   script(type='text/javascript', src='/javascripts/three/Detector.js')
