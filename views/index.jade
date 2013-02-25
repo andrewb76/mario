@@ -19,18 +19,13 @@ block navbar
             a(href='#!/success') Success
           li#m_item_error
             a(href='#!/error') Error
+
 block content
   div.span3
-    div.well.sidebar-nav
+    div.well
       ul.nav.nav-list
-        li.nav-header Sidebar
-    
-    div.well.routing-block#start
-      ul.nav.nav-list
-        li.nav-header Start
-        li
-          a(href='#') refresh
-      ul#unit-list
+        li.nav-header Connection types
+        #connTypeList
 
     div.well
       ul.nav.nav-list
@@ -44,27 +39,7 @@ block content
         li#unit-detail
         #unitConnectionsList
 
-    script#udetail-empty(type='text/template')
-      <p>not selected</p>
-
-    script#udetail-show(type='text/template')
-      <a id="edit_unit" class="btn btn-mini" href="#"><i class="icon-edit"></i> Edit</a>
-      <p>view: <%= Name %></p>
-
-    script#udetail-edit(type='text/template')
-      <form>
-      <fieldset>
-      <legend>Unit properties</legend>
-      <label>Unit name</label>
-      <input type="text" value="<%= Name %>"/>
-      <span class="help-block">Unic unit code name.</span>
-      <label class="checkbox">
-      <input type="checkbox"> Check me out
-      </label>
-      <button type="submit" class="btn">Submit</button>
-      <a id="view_unit" class="btn btn-mini" href="#"><i class="icon-search"></i> View</a>
-      </fieldset>
-      </form>
+    include templates
 
     div.well.routing-block#success
       ul.nav.nav-list

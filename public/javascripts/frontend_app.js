@@ -1,9 +1,33 @@
 MarioApp = new Backbone.Marionette.Application();
 //========================================================================
-var ConnectionModel = Backbone.Model.extend({});
+var ConnectionTypeModel = Backbone.Model.extend({});
+var ConnectionTypeCollection = Backbone.Collection.extend({
+  model: ConnectionTypeModel,
+});
+//--------------------------------------------------
+var ConnectionModel = Backbone.Model.extend({
+  defaults: {
+    name: ' - = * = -',
+  },
+  initialize: function() {
+    this.set('name', this.get('ctype').get('name') +"_"+this.get('gender')+'_'+this.get());
+  }
+});
 var ConnectionCollection = Backbone.Collection.extend({
   model: ConnectionModel,
 });
+//========================================================================
+var ConnectionTypeView = Backbone.Marionette.ItemView.extend({
+  template: '#connTypeItemView'
+});
+var ConnectionTypeEmptyView = Backbone.Marionette.ItemView.extend({
+  template: '#connTypeEmptyView'
+}); 
+var ConnectionTypeListView = Backbone.Marionette.CollectionView.extend({
+  itemView: ConnectionTypeView,
+  emptyView: ConnectionTypeEmptyView
+});
+//========================================================================
 var ConnectionView = Backbone.Marionette.ItemView.extend({
   template: '#connItemView'
 });
@@ -27,6 +51,7 @@ var UnitCollection = Backbone.Collection.extend({
 });
 //========================================================================
 MarioApp.addRegions({
+  connTypeListRegion: "#connTypeList",
   connListRegion: "#connList",
   unitListRegion: "#unitList"
 });
@@ -34,8 +59,12 @@ MarioApp.addInitializer(function(){
 
   if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-  var con1 = new ConnectionModel({name: 'thread_3/4_M'});
-  var con2 = new ConnectionModel({name: 'thread_3/4_F'});
+  var con_type_1 = new ConnectionTypeModel({name: 'thread', gender: true, demountable: true, sizes: ['1/2"', '5/8"', '3/4"', '7/8"', '1"', '1,5"', '2"']});
+  MarioApp.connectionTypes = new ConnectionTypeCollection([con_type_1,]);
+
+  var con1 = new ConnectionModel({ctype: con_type_1, gender: 'M', size: '1/2"'});
+  var con2 = new ConnectionModel({ctype: con_type_1, gender: 'F', size: '1/2"'});
+
   MarioApp.connections = new ConnectionCollection([con1, con2]);
   MarioApp.units = new UnitCollection([ 
     { Name:        "Муфта", 
@@ -60,6 +89,7 @@ MarioApp.addInitializer(function(){
       ]
     },
   ]);
+  MarioApp.connTypeListRegion.show(new ConnectionTypeListView({collection: MarioApp.connectionTypes}));
   MarioApp.connListRegion.show(new ConnectionListView({collection: MarioApp.connections}));
 });
 
